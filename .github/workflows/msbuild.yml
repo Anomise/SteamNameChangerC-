@@ -1,0 +1,58 @@
+- name: Retarget toolset to v143
+  shell: pwsh
+  run: |
+    $files = Get-ChildItem -Recurse -Filter *.vcxproj
+    foreach ($f in $files) {
+      (Get-Content $f.FullName) `
+        -replace '<PlatformToolset>v140</PlatformToolset>', '<PlatformToolset>v143</PlatformToolset>' |
+        Set-Content $f.FullName
+    }
+
+name: Windows Build (MSVC)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+        platform: [x64, Win32]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      # Если у проекта есть NuGet-пакеты — раскомментируй блок ниже
+      # - name: Setup NuGet
+      #   uses: NuGet/setup-nuget@v2
+      #
+      # - name: Restore NuGet
+      #   run: nuget restore "Steam Name Changer.sln"
+
+      - name: Build
+        shell: pwsh
+        run: |
+          msbuild "Steam Name Changer.sln" `
+            /m `
+            /p:Configuration=${{ matrix.configuration }} `
+            /p:Platform=${{ matrix.platform }} `
+            /p:RestorePackages=false
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.platform }}-${{ matrix.configuration }}
+          path: |
+            **\bin\${{ matrix.configuration }}\**
+            **\${{ matrix.configuration }}\**
+          if-no-files-found: warn
