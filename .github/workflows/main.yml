@@ -28,7 +28,9 @@ jobs:
           msbuild "Steam Name Changer.sln" `
             /m `
             /p:Configuration=${{ matrix.configuration }} `
-            /p:Platform=${{ matrix.platform }}
+            /p:Platform=${{ matrix.platform }} `
+            /p:PlatformToolset=v143 `
+            /p:WindowsTargetPlatformVersion=10.0
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
