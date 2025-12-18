@@ -1,3 +1,13 @@
+- name: Retarget toolset to v143
+  shell: pwsh
+  run: |
+    $files = Get-ChildItem -Recurse -Filter *.vcxproj
+    foreach ($f in $files) {
+      (Get-Content $f.FullName) `
+        -replace '<PlatformToolset>v140</PlatformToolset>', '<PlatformToolset>v143</PlatformToolset>' |
+        Set-Content $f.FullName
+    }
+
 name: Windows Build (MSVC)
 
 on:
