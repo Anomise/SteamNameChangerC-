@@ -1,0 +1,22 @@
+name: Build
+
+on:
+  push:
+    branches: ["main", "master", "work", "release", "develop", "dev", "*/*"]
+  pull_request:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore "Steam Name Changer.sln"
+
+      - name: Build Release x64
+        run: msbuild "Steam Name Changer.sln" /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143 /m
